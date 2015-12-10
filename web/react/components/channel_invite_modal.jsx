@@ -19,8 +19,10 @@ export default class ChannelInviteModal extends React.Component {
 
         this.onListenerChange = this.onListenerChange.bind(this);
         this.handleInvite = this.handleInvite.bind(this);
+        this.handleFilterChange = this.handleFilterChange.bind(this);
 
         this.state = this.getStateFromStores();
+        console.log('state', this.getStateFromStores());
     }
     shouldComponentUpdate(nextProps, nextState) {
         if (!Utils.areObjectsEqual(this.props, nextProps)) {
@@ -41,7 +43,7 @@ export default class ChannelInviteModal extends React.Component {
         var memberIds = ChannelStore.getCurrentExtraInfo().members.map(getId);
 
         var loading = $.isEmptyObject(users);
-
+        var filter = '';
         var nonmembers = [];
         for (var id in users) {
             if (memberIds.indexOf(id) === -1) {
@@ -55,7 +57,8 @@ export default class ChannelInviteModal extends React.Component {
 
         return {
             nonmembers,
-            loading
+            loading,
+            filter
         };
     }
     onShow() {
@@ -105,6 +108,37 @@ export default class ChannelInviteModal extends React.Component {
             }
         );
     }
+
+
+    handleFilterChange() {
+        const filter = ReactDOM.findDOMNode(this.refs.filter).value;
+
+        this.setState({
+            filter: filter
+        });
+
+        let nonmembers = this.state.nonmembers;
+        if (this.state.filter) {
+            const filter = this.state.filter.toLowerCase();
+
+            console.log('nonmembers:', nonmembers)
+
+            nonmembers = nonmembers.filter((user) => {
+                return user.username.toLowerCase().indexOf(filter) !== -1 ||
+                    user.first_name.toLowerCase().indexOf(filter) !== -1 ||
+                    user.last_name.toLowerCase().indexOf(filter) !== -1 ||
+                    user.nickname.toLowerCase().indexOf(filter) !== -1;
+            });
+
+            //this.setState({nonmembers:nonmembers});
+        }
+
+    }
+
+    createRowForUser() {
+        console.log("created");
+    }
+
     render() {
         var inviteError = null;
         if (this.state.inviteError) {
@@ -130,6 +164,7 @@ export default class ChannelInviteModal extends React.Component {
             );
         }
 
+
         return (
             <Modal
                 dialogClassName='more-modal'
@@ -142,6 +177,14 @@ export default class ChannelInviteModal extends React.Component {
                 <Modal.Body
                     ref='modalBody'
                 >
+
+                            <input
+                                ref='filter'
+                                className='form-control filter-textbox'
+                                placeholder='Search members'
+                                onInput={this.handleFilterChange}
+                            />
+                          <p>working!!   {this.state.nonmembers.length} filter: {this.state.filter}</p>
                     {inviteError}
                     {content}
                 </Modal.Body>
