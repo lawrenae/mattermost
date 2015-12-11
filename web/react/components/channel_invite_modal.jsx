@@ -22,7 +22,6 @@ export default class ChannelInviteModal extends React.Component {
         this.handleFilterChange = this.handleFilterChange.bind(this);
 
         this.state = this.getStateFromStores();
-        console.log('state', this.getStateFromStores());
     }
     shouldComponentUpdate(nextProps, nextState) {
         if (!Utils.areObjectsEqual(this.props, nextProps)) {
@@ -109,30 +108,35 @@ export default class ChannelInviteModal extends React.Component {
         );
     }
 
-
     handleFilterChange() {
         const filter = ReactDOM.findDOMNode(this.refs.filter).value;
+
+        if (! this.state.originalNonMembers) {
+            this.setState({
+                originalNonMembers: this.state.nonmembers
+            });
+        }
 
         this.setState({
             filter: filter
         });
 
         let nonmembers = this.state.nonmembers;
-        if (this.state.filter) {
-            const filter = this.state.filter.toLowerCase();
-
-            console.log('nonmembers:', nonmembers)
+        if (filter) {
+            const filterString = filter.toLowerCase();
 
             nonmembers = nonmembers.filter((user) => {
-                return user.username.toLowerCase().indexOf(filter) !== -1 ||
-                    user.first_name.toLowerCase().indexOf(filter) !== -1 ||
-                    user.last_name.toLowerCase().indexOf(filter) !== -1 ||
-                    user.nickname.toLowerCase().indexOf(filter) !== -1;
+                return user.username.toLowerCase().indexOf(filterString) !== -1 ||
+                    user.first_name.toLowerCase().indexOf(filterString) !== -1 ||
+                    user.last_name.toLowerCase().indexOf(filterString) !== -1 ||
+                    user.nickname.toLowerCase().indexOf(filterString) !== -1;
             });
 
-            //this.setState({nonmembers:nonmembers});
+        } else {
+            nonmembers = this.state.originalNonMembers;
         }
 
+        this.setState({nonmembers:nonmembers});
     }
 
     createRowForUser() {
@@ -178,13 +182,12 @@ export default class ChannelInviteModal extends React.Component {
                     ref='modalBody'
                 >
 
-                            <input
-                                ref='filter'
-                                className='form-control filter-textbox'
-                                placeholder='Search members'
-                                onInput={this.handleFilterChange}
-                            />
-                          <p>working!!   {this.state.nonmembers.length} filter: {this.state.filter}</p>
+                <input
+                    ref='filter'
+                    className='form-control filter-textbox'
+                    placeholder='Search members'
+                    onInput={this.handleFilterChange}
+                />
                     {inviteError}
                     {content}
                 </Modal.Body>
